@@ -49,7 +49,7 @@ Each selected project will then be scanned sequentially, and Sokrates report fil
 docker run -it \
   -v "$PWD:/input" \
   -v "$PWD/output:/output" \
-  kitnetic/kitnetic-sokrates
+  kitnetic/sokrates
 ```
 
 ## Volume mounts
