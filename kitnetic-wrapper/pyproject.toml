@@ -10,6 +10,7 @@ packages = [{ include = "kitnetic_wrapper", from = "src" }]
 python = "^3.10"
 typer = "^0.21.1"
 rich = "^14.3.1"
+beautifulsoup4 = "^4.14.3"
 InquirerPy = "^0.3.4"
 
 [tool.poetry.scripts]

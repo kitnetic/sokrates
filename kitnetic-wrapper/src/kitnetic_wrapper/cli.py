@@ -14,6 +14,7 @@ import typer
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 from rich.console import Console
+from bs4 import BeautifulSoup
 
 app = typer.Typer(add_completion=False, help="Run a Sokrates code scan on one or more projects.")
 console = Console()
@@ -248,6 +249,38 @@ def write_summary_report(output_folder_path: Path, results: List[ScanProjectResu
     path = output_folder_path.resolve() / "kitnetic_summary_report.json"
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
+def sanitise_html_reports(output_folder_path: Path) -> None:
+    project_folder_paths = list_immediate_subfolders(output_folder_path)
+    for folder_path in project_folder_paths:
+        remove_source_code_from_reports(folder_path)
+        remove_reference_to_source_from_html_reports(folder_path)
+
+def remove_source_code_from_reports(report_folder_path: Path) -> None:
+    folder_path = report_folder_path / "reports/src"
+
+    if folder_path.exists():
+        shutil.rmtree(folder_path)
+
+def remove_reference_to_source_from_html_reports(report_folder_path: Path) -> None:
+    for dir_path, _, filenames in os.walk(report_folder_path):
+        for filename in filenames:
+            if filename.lower().endswith((".html", ".htm")):
+                file_path = os.path.join(dir_path, filename)
+
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    soup = BeautifulSoup(f, 'html.parser')
+
+                links_to_remove = soup.find_all('a', href=lambda x: x and x.startswith('../src'))
+
+                if not links_to_remove:
+                    continue
+
+                for link in links_to_remove:
+                    link.unwrap()
+
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(str(soup))
+
 @app.command()
 def scan(
         input: Path = typer.Option(
@@ -314,16 +347,23 @@ def scan(
 
     scan_results = scan_projects(projects, dry_run=dry_run)
 
-    console.print(f"\n[bold green]All scans complete.[/bold green]")
+    console.print("\n[bold green]All scans complete.[/bold green]")
 
     if not dry_run:
+        console.print("\n[bold]Finalising...[/bold]\n")
+
         report_folder_path = output.resolve() / report_folder_name
 
+        console.print(f"[cyan]Stage 1 of 3:[/cyan] Consolidating Sokrates reports")
         consolidate_sokrates_reports(report_folder_path, scan_results)
 
+        console.print(f"[cyan]Stage 2 of 3:[/cyan] Removing source code from Sokrates reports")
+        sanitise_html_reports(report_folder_path)
+
+        console.print(f"[cyan]Stage 3 of 3:[/cyan] Creating summary report")
         write_summary_report(report_folder_path, scan_results)
 
-        console.print(f"\n[cyan]Reports written to {report_folder_path}[/cyan]")
+        console.print(f"\n[bold green]All reports written to {report_folder_path}[/bold green]\n")
 
 def main() -> None:
     app()
