@@ -2,7 +2,7 @@
 
 The Kitnetic wrapper is an interactive CLI tool that orchestrates running the **Sokrates** code scanner across one or more selected project folders.
 
-The wrapper simplifies project selection, execution, and report collection.
+The wrapper streamlines project selection, execution, and report collection, while also removing the source code from the final reports, which are bundled as part of Sokrates' standard workflow.
 
 Source code: https://github.com/kitnetic/sokrates (fork of the official Sokrates repository)
 
