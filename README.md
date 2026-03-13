@@ -28,3 +28,10 @@ Build the docker image:
 
 Run init command:
 > docker run -v "$(pwd):/code" -w /code sokrates init
+
+## Kitnetic wrapper
+
+This fork of the Sokrates repository has been modified to include a simple Python script developed by [Kitnetic](https://kitnetic.co.uk)
+. The associated Docker container has been updated to execute this script instead of invoking the tool directly, simplifying the process of running the Sokrates scanner across multiple projects within a single workflow.
+
+Please see the README.md in `./kitnetic-wrapper` for more  details
